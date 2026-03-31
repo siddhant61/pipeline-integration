@@ -50,6 +50,8 @@ jobs:
     name: "Stage 2 – Content Research"
     needs: ingest
     uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@master
+    with:
+      upstream-artifact-name: jwst-upstream-handoff
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -61,6 +63,8 @@ jobs:
     name: "Stage 3 – Media Generation"
     needs: research
     uses: siddhant61/media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml@main
+    with:
+      downstream-artifact-name: jwst-downstream-handoff
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -125,6 +129,7 @@ jobs:
           echo "============================================"
           echo ""
           echo "Topic: ${{ inputs.topic }}"
+          echo "Artifact transport: real (run-produced artifacts passed between stages)"
           echo ""
           echo "Stage results:"
           echo "  $ICON_INGEST  Stage 1 – Material Ingestion : $INGEST_RESULT"
@@ -132,9 +137,9 @@ jobs:
           echo "  $ICON_GENERATE  Stage 3 – Media Generation   : $GENERATE_RESULT"
           echo ""
           echo "Artifacts:"
-          echo "  jwst-upstream-handoff  : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
-          echo "  jwst-downstream-handoff: $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
-          echo "  scene-plan-outputs     : $([ -d artifacts/scene-plan-outputs ] && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-upstream-handoff   → Stage 2 (via upstream-artifact-name) : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-downstream-handoff → Stage 3 (via downstream-artifact-name): $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
+          echo "  scene-plan-outputs      (final output)                          : $([ -d artifacts/scene-plan-outputs ] && echo 'PRESENT' || echo 'MISSING')"
           echo ""
           echo "Download artifacts from the 'Artifacts' section at the bottom"
           echo "of this workflow run page."
@@ -145,6 +150,8 @@ jobs:
             echo "## JWST Chain Run – Summary"
             echo ""
             echo "**Topic:** ${{ inputs.topic }}"
+            echo ""
+            echo "**Artifact transport:** Real — run-produced artifacts are passed between stages"
             echo ""
             echo "### Stage results"
             echo ""
