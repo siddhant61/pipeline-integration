@@ -82,7 +82,10 @@ jobs:
     steps:
       # Reusable workflow jobs run within this workflow run,
       # so their uploaded artifacts are available here.
+      # Only attempt downloads when the producing stage succeeded
+      # to avoid misleading artifact-not-found errors.
       - name: Download upstream handoff
+        if: needs.ingest.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: jwst-upstream-handoff
@@ -90,6 +93,7 @@ jobs:
         continue-on-error: true
 
       - name: Download downstream handoff
+        if: needs.research.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: jwst-downstream-handoff
@@ -97,6 +101,7 @@ jobs:
         continue-on-error: true
 
       - name: Download scene-plan outputs
+        if: needs.generate.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: scene-plan-outputs
@@ -120,9 +125,42 @@ jobs:
             esac
           }
 
+          # --- helper: artifact status based on stage result ---
+          # Only reports PRESENT / MISSING when the stage succeeded.
+          # Otherwise explains why the artifact was not expected.
+          artifact_status() {
+            local stage_result="$1"
+            local artifact_dir="$2"
+            case "$stage_result" in
+              success)
+                if [ -d "$artifact_dir" ]; then
+                  echo "✅ Present"
+                else
+                  echo "❌ Missing (stage succeeded but artifact not found)"
+                fi
+                ;;
+              failure)
+                echo "⚠️ Not expected (stage failed)"
+                ;;
+              skipped)
+                echo "⏭️ Not expected (stage skipped)"
+                ;;
+              cancelled)
+                echo "⏹️ Not expected (stage cancelled)"
+                ;;
+              *)
+                echo "❓ Unknown stage result: $stage_result"
+                ;;
+            esac
+          }
+
           ICON_INGEST=$(status_icon "$INGEST_RESULT")
           ICON_RESEARCH=$(status_icon "$RESEARCH_RESULT")
           ICON_GENERATE=$(status_icon "$GENERATE_RESULT")
+
+          ART_UPSTREAM=$(artifact_status "$INGEST_RESULT" "artifacts/upstream-handoff")
+          ART_DOWNSTREAM=$(artifact_status "$RESEARCH_RESULT" "artifacts/downstream-handoff")
+          ART_SCENEPLAN=$(artifact_status "$GENERATE_RESULT" "artifacts/scene-plan-outputs")
 
           # --- console output ---
           echo "============================================"
@@ -138,9 +176,9 @@ jobs:
           echo "  $ICON_GENERATE  Stage 3 – Media Generation   : $GENERATE_RESULT"
           echo ""
           echo "Artifacts:"
-          echo "  jwst-upstream-handoff   → Stage 2 (via upstream_artifact_name) : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
-          echo "  jwst-downstream-handoff → Stage 3 (via downstream_artifact_name): $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
-          echo "  scene-plan-outputs      (final output)                          : $([ -d artifacts/scene-plan-outputs ] && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-upstream-handoff   → Stage 2 (via upstream_artifact_name) : $ART_UPSTREAM"
+          echo "  jwst-downstream-handoff → Stage 3 (via downstream_artifact_name): $ART_DOWNSTREAM"
+          echo "  scene-plan-outputs      (final output)                          : $ART_SCENEPLAN"
           echo ""
           echo "Download artifacts from the 'Artifacts' section at the bottom"
           echo "of this workflow run page."
@@ -166,9 +204,9 @@ jobs:
             echo ""
             echo "| Artifact name | Source stage | Status |"
             echo "|---------------|-------------|--------|"
-            echo "| \`jwst-upstream-handoff\` | Stage 1 – Material Ingestion | $([ -d artifacts/upstream-handoff ] && echo '✅ Present' || echo '❌ Missing') |"
-            echo "| \`jwst-downstream-handoff\` | Stage 2 – Content Research | $([ -d artifacts/downstream-handoff ] && echo '✅ Present' || echo '❌ Missing') |"
-            echo "| \`scene-plan-outputs\` | Stage 3 – Media Generation | $([ -d artifacts/scene-plan-outputs ] && echo '✅ Present' || echo '❌ Missing') |"
+            echo "| \`jwst-upstream-handoff\` | Stage 1 – Material Ingestion | $ART_UPSTREAM |"
+            echo "| \`jwst-downstream-handoff\` | Stage 2 – Content Research | $ART_DOWNSTREAM |"
+            echo "| \`scene-plan-outputs\` | Stage 3 – Media Generation | $ART_SCENEPLAN |"
             echo ""
             echo "> **Tip:** Download artifacts from the **Artifacts** section at the bottom of this workflow run page."
           } >> "$GITHUB_STEP_SUMMARY"
