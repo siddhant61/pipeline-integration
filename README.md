@@ -70,8 +70,7 @@ This repository does **not** own:
 1. Go to the **Actions** tab in this repository.
 2. Select the **Run JWST Chain** workflow in the left sidebar.
 3. Click **Run workflow**.
-4. Optionally edit the topic input (defaults to the canonical JWST demo topic).
-5. Click **Run workflow** to start.
+4. Click **Run workflow** again to confirm.
 
 The workflow executes four jobs in sequence:
 
@@ -80,7 +79,7 @@ The workflow executes four jobs in sequence:
 | `ingest` | 1 – Material Ingestion | `material-ingestion-pipeline/.github/workflows/manual-validate-upstream.yml` | `jwst-upstream-handoff` |
 | `research` | 2 – Content Research | `content-research-pipeline/.github/workflows/manual-build-downstream.yml` | `jwst-downstream-handoff` |
 | `generate` | 3 – Media Generation | `media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml` | `scene-plan-outputs` |
-| `summary` | 4 – Chain Summary | *(local job)* | Prints artifact inventory |
+| `summary` | 4 – Chain Summary | *(local job)* | Reports per-stage pass/fail and artifact inventory |
 
 ## Expected artifacts
 
@@ -94,28 +93,33 @@ After a successful run, three artifacts are available on the workflow run page:
 
 ## Prerequisites
 
-For the orchestration workflow to call into each pipeline repo, those repos must expose their manual workflows as **reusable workflows** by adding a `workflow_call` trigger alongside their existing `workflow_dispatch` trigger.
+### 1. Reusable workflow triggers
 
-Each pipeline repo needs this change in its workflow file:
+Each pipeline repo must expose its manual workflow as a **reusable workflow** by including a `workflow_call` trigger alongside `workflow_dispatch`. All three repos already have this in place:
 
-```yaml
-on:
-  workflow_dispatch: ...   # existing trigger (keep as-is)
-  workflow_call:           # add this trigger
-    inputs:
-      topic:
-        description: "Demo topic"
-        required: false
-        type: string
-```
+| Repository | Workflow file | `workflow_call` |
+|------------|--------------|:---------------:|
+| `siddhant61/material-ingestion-pipeline` | `manual-validate-upstream.yml` | ✅ Ready |
+| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | ✅ Ready |
+| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | ✅ Ready |
 
-| Repository | Workflow file | Status |
-|------------|--------------|--------|
-| `siddhant61/material-ingestion-pipeline` | `manual-validate-upstream.yml` | Pending — needs `workflow_call` trigger added |
-| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | Pending — needs `workflow_call` trigger added |
-| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | Pending — needs `workflow_call` trigger added |
+### 2. Cross-repo workflow access
 
-## Secrets
+GitHub restricts cross-repository reusable workflow calls by default. The three pipeline repositories must allow access from this orchestration repository.
+
+**For each pipeline repo**, go to:
+
+> **Settings → Actions → General → Access**
+
+and select:
+
+> **"Accessible from repositories in the 'siddhant61' user account"**
+
+(or, if part of an organization, select **"Accessible from repositories in the organization"**).
+
+Without this setting, the orchestration workflow will fail with a "not found" error when calling the reusable workflow.
+
+### 3. Secrets
 
 The orchestration workflow passes secrets to the called workflows using `secrets: inherit`. Ensure the following secrets are configured at the organization level or in this repository:
 
@@ -127,10 +131,10 @@ The orchestration workflow passes secrets to the called workflows using `secrets
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Workflow fails with "not found" on a called workflow | The target repo workflow does not have a `workflow_call` trigger | Add `workflow_call` trigger to the target workflow (see Prerequisites) |
-| Artifact shows as MISSING in summary | The upstream stage did not produce the expected artifact | Check the logs for that stage's job |
+| `error: <workflow> was not found` | Cross-repo access not enabled, or the target workflow lacks a `workflow_call` trigger | 1. Enable access in the target repo: **Settings → Actions → General → Access** (see Prerequisites §2). 2. Verify the workflow file has `workflow_call` under `on:`. |
+| Artifact shows as MISSING in summary | The called stage did not produce the expected artifact | Check the logs for that stage's job |
 | Secret errors in Stage 2 | API keys not configured | Add the required secrets to this repo or the organization |
-| Permission denied on workflow call | Cross-repo workflow access not allowed | Ensure repos are in the same organization and workflow permissions allow cross-repo calls |
+| Stages 2/3 show "skipped" | An earlier stage failed, so dependent stages were skipped | Fix the failing stage first, then re-run |
 
 ## Repository structure
 
