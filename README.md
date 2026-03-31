@@ -81,6 +81,22 @@ The workflow executes four jobs in sequence:
 | `generate` | 3 – Media Generation | `media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml` | `scene-plan-outputs` |
 | `summary` | 4 – Chain Summary | *(local job)* | Reports per-stage pass/fail and artifact inventory |
 
+## Artifact transport
+
+In orchestration mode, the chain uses **real artifact transport**: each stage's run-produced artifacts are passed forward to the next stage via `with:` inputs on the reusable workflow calls, rather than relying on repo-local fixture data.
+
+| From stage | Artifact name | Passed to | Input name |
+|------------|---------------|-----------|------------|
+| Stage 1 – Material Ingestion | `jwst-upstream-handoff` | Stage 2 – Content Research | `upstream-artifact-name` |
+| Stage 2 – Content Research | `jwst-downstream-handoff` | Stage 3 – Media Generation | `downstream-artifact-name` |
+
+This means:
+
+- **Stage 2** receives the `upstream-artifact-name` input (`jwst-upstream-handoff`) so it can download and consume the actual upstream handoff package produced by Stage 1.
+- **Stage 3** receives the `downstream-artifact-name` input (`jwst-downstream-handoff`) so it can download and consume the actual downstream handoff package produced by Stage 2.
+
+When the pipeline repos are run individually (via `workflow_dispatch` without these inputs), they fall back to their own repo-local fixture data. In orchestration mode, they use the real artifacts from the preceding stage.
+
 ## Expected artifacts
 
 After a successful run, three artifacts are available on the workflow run page:
@@ -103,7 +119,18 @@ Each pipeline repo must expose its manual workflow as a **reusable workflow** by
 | `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | ✅ Ready |
 | `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | ✅ Ready |
 
-### 2. Cross-repo workflow access
+### 2. Artifact transport inputs
+
+For real artifact transport, Stages 2 and 3 must accept optional `workflow_call` inputs so the orchestrator can tell them which artifact to download:
+
+| Repository | Workflow file | Required input |
+|------------|--------------|----------------|
+| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | `upstream-artifact-name` (string, optional) |
+| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | `downstream-artifact-name` (string, optional) |
+
+When these inputs are provided, the called workflow should download the named artifact from the current workflow run and use it instead of repo-local fixture data. When omitted (standalone `workflow_dispatch`), the workflow falls back to its own fixtures.
+
+### 3. Cross-repo workflow access
 
 GitHub restricts cross-repository reusable workflow calls by default. The three pipeline repositories must allow access from this orchestration repository.
 
@@ -119,7 +146,7 @@ and select:
 
 Without this setting, the orchestration workflow will fail with a "not found" error when calling the reusable workflow.
 
-### 3. Secrets
+### 4. Secrets
 
 The orchestration workflow passes secrets to the called workflows using `secrets: inherit`. Ensure the following secrets are configured at the organization level or in this repository:
 
