@@ -87,13 +87,14 @@ In orchestration mode, the chain uses **real artifact transport**: each stage's 
 
 | From stage | Artifact name | Passed to | Input name |
 |------------|---------------|-----------|------------|
-| Stage 1 – Material Ingestion | `jwst-upstream-handoff` | Stage 2 – Content Research | `upstream-artifact-name` |
-| Stage 2 – Content Research | `jwst-downstream-handoff` | Stage 3 – Media Generation | `downstream-artifact-name` |
+| Stage 1 – Material Ingestion | `jwst-upstream-handoff` | Stage 2 – Content Research | `upstream_artifact_name` |
+| Stage 2 – Content Research | `jwst-downstream-handoff` | Stage 3 – Media Generation | `downstream_artifact_name` |
 
 This means:
 
-- **Stage 2** receives the `upstream-artifact-name` input (`jwst-upstream-handoff`) so it can download and consume the actual upstream handoff package produced by Stage 1.
-- **Stage 3** receives the `downstream-artifact-name` input (`jwst-downstream-handoff`) so it can download and consume the actual downstream handoff package produced by Stage 2.
+- **Stage 2** receives the `upstream_artifact_name` input (`jwst-upstream-handoff`) so it can download and consume the actual upstream handoff package produced by Stage 1.
+- **Stage 3** receives the `downstream_artifact_name` input (`jwst-downstream-handoff`) so it can download and consume the actual downstream handoff package produced by Stage 2.
+- **Stage 3** also receives `upstream_run_id` (the orchestration workflow's `github.run_id`) for provenance tracking in the RunManifest.
 
 When the pipeline repos are run individually (via `workflow_dispatch` without these inputs), they fall back to their own repo-local fixture data. In orchestration mode, they use the real artifacts from the preceding stage.
 
@@ -125,8 +126,8 @@ For real artifact transport, Stages 2 and 3 must accept optional `workflow_call`
 
 | Repository | Workflow file | Required input |
 |------------|--------------|----------------|
-| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | `upstream-artifact-name` (string, optional) |
-| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | `downstream-artifact-name` (string, optional) |
+| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | `upstream_artifact_name` (string, optional) |
+| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | `downstream_artifact_name` (string, optional), `upstream_run_id` (string, optional) |
 
 When these inputs are provided, the called workflow should download the named artifact from the current workflow run and use it instead of repo-local fixture data. When omitted (standalone `workflow_dispatch`), the workflow falls back to its own fixtures.
 
