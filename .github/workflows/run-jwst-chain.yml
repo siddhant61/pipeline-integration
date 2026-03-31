@@ -1,0 +1,136 @@
+# ============================================================
+# JWST Chain Orchestration Workflow
+# ============================================================
+#
+# Browser-runnable workflow that orchestrates the full JWST
+# demo chain across three pipeline repositories:
+#
+#   material-ingestion-pipeline  (upstream handoff)
+#     -> content-research-pipeline  (downstream handoff)
+#       -> media-generation-pipeline  (stable outputs)
+#
+# Trigger: manual via Actions tab (workflow_dispatch)
+#
+# Prerequisites:
+#   Each pipeline repo must expose a reusable workflow with
+#   a workflow_call trigger. See README.md for details.
+# ============================================================
+
+name: Run JWST Chain
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Demo topic for the JWST chain run"
+        required: false
+        default: "JWST: telescope architecture, star formation, and the early universe"
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  # ----------------------------------------------------------
+  # Stage 1: Material Ingestion
+  # Produces: jwst-upstream-handoff artifact
+  # ----------------------------------------------------------
+  ingest:
+    name: "Stage 1 – Material Ingestion"
+    uses: siddhant61/material-ingestion-pipeline/.github/workflows/manual-validate-upstream.yml@main
+    with:
+      topic: ${{ inputs.topic }}
+    secrets: inherit
+
+  # ----------------------------------------------------------
+  # Stage 2: Content Research
+  # Consumes: upstream handoff from Stage 1
+  # Produces: jwst-downstream-handoff artifact
+  # ----------------------------------------------------------
+  research:
+    name: "Stage 2 – Content Research"
+    needs: ingest
+    uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@main
+    with:
+      topic: ${{ inputs.topic }}
+    secrets: inherit
+
+  # ----------------------------------------------------------
+  # Stage 3: Media Generation
+  # Consumes: downstream handoff from Stage 2
+  # Produces: scene-plan-outputs artifact
+  # ----------------------------------------------------------
+  generate:
+    name: "Stage 3 – Media Generation"
+    needs: research
+    uses: siddhant61/media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml@main
+    with:
+      topic: ${{ inputs.topic }}
+    secrets: inherit
+
+  # ----------------------------------------------------------
+  # Stage 4: Summary
+  # Collects and reports on artifacts from all stages
+  # ----------------------------------------------------------
+  summary:
+    name: "Chain Summary"
+    needs: [ingest, research, generate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download upstream handoff
+        uses: actions/download-artifact@v4
+        with:
+          name: jwst-upstream-handoff
+          path: artifacts/upstream-handoff
+        continue-on-error: true
+
+      - name: Download downstream handoff
+        uses: actions/download-artifact@v4
+        with:
+          name: jwst-downstream-handoff
+          path: artifacts/downstream-handoff
+        continue-on-error: true
+
+      - name: Download scene-plan outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: scene-plan-outputs
+          path: artifacts/scene-plan-outputs
+        continue-on-error: true
+
+      - name: Print chain summary
+        run: |
+          echo "============================================"
+          echo "  JWST Chain Run – Summary"
+          echo "============================================"
+          echo ""
+          echo "Topic: ${{ inputs.topic }}"
+          echo ""
+          echo "--- Stage 1: Material Ingestion ---"
+          if [ -d artifacts/upstream-handoff ]; then
+            echo "  Upstream handoff artifact: PRESENT"
+            ls -lR artifacts/upstream-handoff
+          else
+            echo "  Upstream handoff artifact: MISSING"
+          fi
+          echo ""
+          echo "--- Stage 2: Content Research ---"
+          if [ -d artifacts/downstream-handoff ]; then
+            echo "  Downstream handoff artifact: PRESENT"
+            ls -lR artifacts/downstream-handoff
+          else
+            echo "  Downstream handoff artifact: MISSING"
+          fi
+          echo ""
+          echo "--- Stage 3: Media Generation ---"
+          if [ -d artifacts/scene-plan-outputs ]; then
+            echo "  Scene-plan outputs artifact: PRESENT"
+            ls -lR artifacts/scene-plan-outputs
+          else
+            echo "  Scene-plan outputs artifact: MISSING"
+          fi
+          echo ""
+          echo "============================================"
+          echo "  Chain complete."
+          echo "============================================"
