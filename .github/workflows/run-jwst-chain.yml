@@ -39,8 +39,6 @@ jobs:
   ingest:
     name: "Stage 1 – Material Ingestion"
     uses: siddhant61/material-ingestion-pipeline/.github/workflows/manual-validate-upstream.yml@main
-    with:
-      topic: ${{ inputs.topic }}
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -52,8 +50,6 @@ jobs:
     name: "Stage 2 – Content Research"
     needs: ingest
     uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@main
-    with:
-      topic: ${{ inputs.topic }}
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -65,16 +61,17 @@ jobs:
     name: "Stage 3 – Media Generation"
     needs: research
     uses: siddhant61/media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml@main
-    with:
-      topic: ${{ inputs.topic }}
     secrets: inherit
 
   # ----------------------------------------------------------
   # Stage 4: Summary
-  # Collects and reports on artifacts from all stages
+  # Collects and reports on artifacts from all stages.
+  # Runs even if earlier stages fail so the user always gets
+  # a clear status report.
   # ----------------------------------------------------------
   summary:
     name: "Chain Summary"
+    if: always()
     needs: [ingest, research, generate]
     runs-on: ubuntu-latest
     steps:
@@ -102,37 +99,77 @@ jobs:
         continue-on-error: true
 
       - name: Print chain summary
+        env:
+          INGEST_RESULT: ${{ needs.ingest.result }}
+          RESEARCH_RESULT: ${{ needs.research.result }}
+          GENERATE_RESULT: ${{ needs.generate.result }}
         run: |
+          # --- helper: map result to emoji ---
+          status_icon() {
+            case "$1" in
+              success)   echo "✅" ;;
+              failure)   echo "❌" ;;
+              cancelled) echo "⏹️" ;;
+              skipped)   echo "⏭️" ;;
+              *)         echo "❓" ;;
+            esac
+          }
+
+          ICON_INGEST=$(status_icon "$INGEST_RESULT")
+          ICON_RESEARCH=$(status_icon "$RESEARCH_RESULT")
+          ICON_GENERATE=$(status_icon "$GENERATE_RESULT")
+
+          # --- console output ---
           echo "============================================"
           echo "  JWST Chain Run – Summary"
           echo "============================================"
           echo ""
           echo "Topic: ${{ inputs.topic }}"
           echo ""
-          echo "--- Stage 1: Material Ingestion ---"
-          if [ -d artifacts/upstream-handoff ]; then
-            echo "  Upstream handoff artifact: PRESENT"
-            ls -lR artifacts/upstream-handoff
-          else
-            echo "  Upstream handoff artifact: MISSING"
-          fi
+          echo "Stage results:"
+          echo "  $ICON_INGEST  Stage 1 – Material Ingestion : $INGEST_RESULT"
+          echo "  $ICON_RESEARCH  Stage 2 – Content Research   : $RESEARCH_RESULT"
+          echo "  $ICON_GENERATE  Stage 3 – Media Generation   : $GENERATE_RESULT"
           echo ""
-          echo "--- Stage 2: Content Research ---"
-          if [ -d artifacts/downstream-handoff ]; then
-            echo "  Downstream handoff artifact: PRESENT"
-            ls -lR artifacts/downstream-handoff
-          else
-            echo "  Downstream handoff artifact: MISSING"
-          fi
+          echo "Artifacts:"
+          echo "  jwst-upstream-handoff  : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-downstream-handoff: $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
+          echo "  scene-plan-outputs     : $([ -d artifacts/scene-plan-outputs ] && echo 'PRESENT' || echo 'MISSING')"
           echo ""
-          echo "--- Stage 3: Media Generation ---"
-          if [ -d artifacts/scene-plan-outputs ]; then
-            echo "  Scene-plan outputs artifact: PRESENT"
-            ls -lR artifacts/scene-plan-outputs
-          else
-            echo "  Scene-plan outputs artifact: MISSING"
-          fi
-          echo ""
+          echo "Download artifacts from the 'Artifacts' section at the bottom"
+          echo "of this workflow run page."
           echo "============================================"
-          echo "  Chain complete."
-          echo "============================================"
+
+          # --- GitHub Actions Job Summary (renders in the UI) ---
+          {
+            echo "## JWST Chain Run – Summary"
+            echo ""
+            echo "**Topic:** ${{ inputs.topic }}"
+            echo ""
+            echo "### Stage results"
+            echo ""
+            echo "| Stage | Workflow | Result |"
+            echo "|-------|---------|--------|"
+            echo "| 1 – Material Ingestion | \`manual-validate-upstream.yml\` | $ICON_INGEST **$INGEST_RESULT** |"
+            echo "| 2 – Content Research   | \`manual-build-downstream.yml\`  | $ICON_RESEARCH **$RESEARCH_RESULT** |"
+            echo "| 3 – Media Generation   | \`manual-generate-sceneplan.yml\` | $ICON_GENERATE **$GENERATE_RESULT** |"
+            echo ""
+            echo "### Artifacts"
+            echo ""
+            echo "| Artifact name | Source stage | Status |"
+            echo "|---------------|-------------|--------|"
+            echo "| \`jwst-upstream-handoff\` | Stage 1 – Material Ingestion | $([ -d artifacts/upstream-handoff ] && echo '✅ Present' || echo '❌ Missing') |"
+            echo "| \`jwst-downstream-handoff\` | Stage 2 – Content Research | $([ -d artifacts/downstream-handoff ] && echo '✅ Present' || echo '❌ Missing') |"
+            echo "| \`scene-plan-outputs\` | Stage 3 – Media Generation | $([ -d artifacts/scene-plan-outputs ] && echo '✅ Present' || echo '❌ Missing') |"
+            echo ""
+            echo "> **Tip:** Download artifacts from the **Artifacts** section at the bottom of this workflow run page."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if any stage failed
+        if: >-
+          needs.ingest.result == 'failure' ||
+          needs.research.result == 'failure' ||
+          needs.generate.result == 'failure'
+        run: |
+          echo "One or more stages failed. See the summary above for details."
+          exit 1
