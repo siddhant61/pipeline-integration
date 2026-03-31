@@ -51,7 +51,7 @@ jobs:
     needs: ingest
     uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@master
     with:
-      upstream-artifact-name: jwst-upstream-handoff
+      upstream_artifact_name: jwst-upstream-handoff
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -64,7 +64,8 @@ jobs:
     needs: research
     uses: siddhant61/media-generation-pipeline/.github/workflows/manual-generate-sceneplan.yml@main
     with:
-      downstream-artifact-name: jwst-downstream-handoff
+      downstream_artifact_name: jwst-downstream-handoff
+      upstream_run_id: ${{ github.run_id }}
     secrets: inherit
 
   # ----------------------------------------------------------
@@ -137,8 +138,8 @@ jobs:
           echo "  $ICON_GENERATE  Stage 3 – Media Generation   : $GENERATE_RESULT"
           echo ""
           echo "Artifacts:"
-          echo "  jwst-upstream-handoff   → Stage 2 (via upstream-artifact-name) : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
-          echo "  jwst-downstream-handoff → Stage 3 (via downstream-artifact-name): $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-upstream-handoff   → Stage 2 (via upstream_artifact_name) : $([ -d artifacts/upstream-handoff ]  && echo 'PRESENT' || echo 'MISSING')"
+          echo "  jwst-downstream-handoff → Stage 3 (via downstream_artifact_name): $([ -d artifacts/downstream-handoff ] && echo 'PRESENT' || echo 'MISSING')"
           echo "  scene-plan-outputs      (final output)                          : $([ -d artifacts/scene-plan-outputs ] && echo 'PRESENT' || echo 'MISSING')"
           echo ""
           echo "Download artifacts from the 'Artifacts' section at the bottom"
