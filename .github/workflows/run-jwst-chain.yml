@@ -49,7 +49,7 @@ jobs:
   research:
     name: "Stage 2 – Content Research"
     needs: ingest
-    uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@main
+    uses: siddhant61/content-research-pipeline/.github/workflows/manual-build-downstream.yml@master
     secrets: inherit
 
   # ----------------------------------------------------------
