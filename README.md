@@ -111,9 +111,9 @@ on:
 
 | Repository | Workflow file | Status |
 |------------|--------------|--------|
-| `siddhant61/material-ingestion-pipeline` | `manual-validate-upstream.yml` | Needs `workflow_call` trigger |
-| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | Needs `workflow_call` trigger |
-| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | Needs `workflow_call` trigger |
+| `siddhant61/material-ingestion-pipeline` | `manual-validate-upstream.yml` | Pending — needs `workflow_call` trigger added |
+| `siddhant61/content-research-pipeline` | `manual-build-downstream.yml` | Pending — needs `workflow_call` trigger added |
+| `siddhant61/media-generation-pipeline` | `manual-generate-sceneplan.yml` | Pending — needs `workflow_call` trigger added |
 
 ## Secrets
 
