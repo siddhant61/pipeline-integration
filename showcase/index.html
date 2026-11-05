@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="From source material to research-led media: explore the vision behind a modular AI workflow for Material Ingestion, Content Research, and Media Generation.">
+  <title>Dispatch | From material to meaning</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="#main"><span class="mark" aria-hidden="true">↗</span> DISPATCH / AI WORKFLOW STACK</a>
+    <nav aria-label="Main navigation">
+      <a href="#pipeline">Architecture</a>
+      <a href="#demo">Demo</a>
+      <a href="#principles">The vision</a>
+      <a href="#status">Development notes</a>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="eyebrow">THE VISION / THREE MODULAR PIPELINES</div>
+      <h1 id="hero-title">From material<br>to <em>meaning.</em><br>Then into media.</h1>
+      <p class="intro">Dispatch is the orchestration home for a modular AI workflow designed to gather material, develop research, and shape it into media, with an inspectable handoff between each stage.</p>
+      <div class="actions">
+        <a class="button" href="#pipeline">Explore the architecture <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="#demo">Explore the JWST story →</a>
+      </div>
+      <div class="hero-art" role="img" aria-label="Conceptual workflow: Material Ingestion, Content Research, then Media Generation. This diagram is illustrative, not a live execution.">
+        <div class="orbit o1"></div><div class="orbit o2"></div><div class="orbit o3"></div>
+        <span class="node n1">01 <b>MATERIAL</b></span>
+        <span class="node n2">02 <b>RESEARCH</b></span>
+        <span class="node n3">03 <b>MEDIA</b></span>
+        <div class="center">EXPLICIT<br><strong>ARTIFACTS</strong><br>AT EACH STAGE</div>
+      </div>
+      <div class="hero-bottom"><span>OPEN SOURCE / PYTHON</span><span>VERSIONED JSON CONTRACTS</span><span>FROM SOURCE TO STORY</span></div>
+    </section>
+
+    <section id="pipeline" class="section" aria-labelledby="pipeline-title">
+      <div class="section-heading">
+        <div><span class="eyebrow">01 / THE ARCHITECTURE</span><h2 id="pipeline-title">Separate responsibilities.<br>Explicit connections.</h2></div>
+        <p>The idea is simple: separate how knowledge is gathered, how it is understood, and how it is expressed. Connect the stages through explicit artifacts.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <span class="step">01 / INGEST</span><div class="icon" aria-hidden="true">▤</div>
+          <h3>Material Ingestion</h3>
+          <p>Give diverse source material a common structure: normalized documents, reusable text chunks, and a knowledge graph for downstream work.</p>
+          <div class="stage-input"><span>STARTS WITH</span><p>Topic manifest and source references</p></div>
+          <div class="artifact"><span>PRODUCES</span><ul><li>RawSourceBundle</li><li>NormalizedDocumentSet</li><li>ChunkSet</li><li>KnowledgeGraphPackage</li><li>RunManifest</li></ul></div>
+          <a href="https://github.com/siddhant61/material-ingestion-pipeline">Explore Material Ingestion ↗</a>
+        </article>
+        <article class="card">
+          <span class="step">02 / RESEARCH</span><div class="icon" aria-hidden="true">⌕</div>
+          <h3>Content Research</h3>
+          <p>Develop structured knowledge into a research brief with key findings, entities, source context, and angles for the story ahead.</p>
+          <div class="stage-input"><span>STARTS WITH</span><p>Upstream artifact package</p></div>
+          <div class="artifact"><span>PRODUCES</span><ul><li>ResearchBrief</li><li>RunManifest</li><li>handoff_manifest.json</li></ul></div>
+          <a href="https://github.com/siddhant61/content-research-pipeline">Explore Content Research ↗</a>
+        </article>
+        <article class="card">
+          <span class="step">03 / GENERATE</span><div class="icon" aria-hidden="true">▷</div>
+          <h3>Media Generation</h3>
+          <p>Translate the research brief into narrative scenes, visual direction, and a structured package for media production.</p>
+          <div class="stage-input"><span>STARTS WITH</span><p>ResearchBrief file or handoff directory</p></div>
+          <div class="artifact"><span>PRODUCES</span><ul><li>ScenePlan</li><li>MediaPackage</li><li>RunManifest</li></ul></div>
+          <a href="https://github.com/siddhant61/media-generation-pipeline">Explore Media Generation ↗</a>
+        </article>
+      </div>
+      <p class="section-note">The shared design keeps each stage independently useful, while making its output available to the next. Run metadata and source references are part of the contract.</p>
+    </section>
+
+    <section id="demo" class="demo section" aria-labelledby="demo-title">
+      <div>
+        <span class="eyebrow">02 / A STORY THROUGH THE SYSTEM</span>
+        <h2 id="demo-title">A universe of material.<br>One coherent story.</h2>
+        <p class="large">James Webb Space Telescope</p>
+        <p class="muted">Imagine a science explainer that begins with NASA and ESA source material, develops a clear research narrative, and turns that narrative into a scene-by-scene visual story. JWST gives the architecture a concrete topic to work with.</p>
+        <dl class="fixture-facts"><div><dt>Findings</dt><dd>9</dd></div><div><dt>Entities</dt><dd>5</dd></div><div><dt>Source entries</dt><dd>6</dd></div></dl>
+        <p class="small-note">A glimpse of the committed research fixture, dated March 31, 2026.</p>
+        <a class="text-link" href="https://github.com/siddhant61/content-research-pipeline/blob/4c3faa9160b7e854b06e22405446a167711eaeff/integration_fixtures/jwst/downstream/ResearchBrief.json">Inspect the committed ResearchBrief ↗</a>
+      </div>
+      <div class="flow">
+        <div><span>01 / GATHER THE MATERIAL</span><h3>Start with the sources</h3><p>Bring mission overviews, technical background, images, and video references into a shared source structure.</p></div>
+        <div><span>02 / DEVELOP THE RESEARCH</span><h3>Find the story in the knowledge</h3><p>Connect the telescope's architecture to the questions it can answer about star formation and the early universe.</p></div>
+        <div><span>03 / SHAPE THE MEDIA</span><h3>Give the story a visual form</h3><p>Plan the sequence, narration, visual briefs, and expected assets needed to turn a research-led idea into an explainer.</p></div>
+      </div>
+      <p class="demo-caption">Illustrative workflow, with repository fixtures available to inspect. Implementation details are in the <a href="#status">work-in-progress notes</a>.</p>
+    </section>
+
+    <section id="principles" class="section principles" aria-labelledby="principles-title">
+      <span class="eyebrow">03 / THE DESIGN VISION</span>
+      <h2 id="principles-title">A workflow you can build on.</h2>
+      <div class="three">
+        <article><h3>Inspect what moves</h3><p>Explicit artifacts make the intermediate work visible. The aim is to inspect, reuse, or improve one stage without treating the whole system as a black box.</p></article>
+        <article><h3>Keep the source in view</h3><p>The design puts source references and run metadata alongside the work, so traceability can remain part of the path from research to media.</p></article>
+        <article><h3>Choose how to extend it</h3><p>Separate repositories create room to improve acquisition, research, or media generation independently. Shared contracts provide the connection between them.</p></article>
+      </div>
+    </section>
+
+    <section class="section closing" aria-labelledby="closing-title">
+      <span class="eyebrow">EXPLORE THE WORK</span>
+      <h2 id="closing-title">Start with a stage.<br>Build toward the whole vision.</h2>
+      <p>Read the setup instructions, inspect the fixtures, and follow each implementation in the public repositories.</p>
+      <div class="actions"><a class="button" href="https://github.com/siddhant61/material-ingestion-pipeline/blob/e52cdd4f89dd28ab94e0789044c8895bc22f0782/contracts/schemas.md">Read the shared contracts ↗</a><a class="text-link" href="#pipeline">Choose a repository ↑</a></div>
+    </section>
+
+    <section id="status" class="section development-notes" aria-labelledby="notes-title">
+      <span class="eyebrow">DEVELOPMENT FOOTNOTES</span>
+      <h2 id="notes-title">Work in progress</h2>
+      <p class="notes-intro">The vision above guides the project. The current implementation combines fixture-based stage demos with ongoing integration work. Reviewed <time datetime="2026-11-05">November 5, 2026</time>.</p>
+      <div id="development-notes">
+        <details>
+          <summary>Current capabilities and remaining implementation work</summary>
+      <div class="two">
+        <article><span class="pill">DOCUMENTED FIXTURE PATHS</span><h3>Structured artifacts and handoffs</h3><ul><li>Ingestion validates its demo manifest and emits five contract-aligned artifact types.</li><li>Research consumes upstream packages and emits a ResearchBrief and downstream handoff descriptor.</li><li>Media builds scene plans, placeholder media manifests, and run metadata.</li><li>Reusable GitHub workflows support transporting artifacts between stages.</li></ul></article>
+        <article><span class="pill pending">LIMITATIONS TO KNOW</span><h3>Acquisition, synthesis, and rendering</h3><ul><li>The ingestion demo does not retrieve raw content or perform AI enrichment. Its graph source references are empty.</li><li>ChunkSet is accepted for provenance, not used for research synthesis.</li><li>Full media rendering needs API keys and additional dependencies. No rendered-video result is claimed here.</li><li>Legacy pipelines and current fixture paths have separate dependencies and integration caveats.</li></ul></article>
+      </div>
+        </details>
+        <details>
+          <summary>Fixture compatibility and source-traceability work</summary>
+      <article id="compatibility" class="compatibility" aria-labelledby="compatibility-title">
+        <span class="pill pending">WORK IN PROGRESS / COMPATIBILITY</span>
+        <h3 id="compatibility-title">Finding-field alignment</h3>
+        <p>Research emits findings with <code>claim</code> and <code>evidence_refs</code>. The current Media consumer reads <code>summary</code> or <code>text</code>, plus <code>citation_refs</code>. Its handoff loader does not translate those fields.</p>
+        <p>A focused offline check with the committed ResearchBrief produced four finding scenes with empty citation lists and dictionary-shaped narration. The consumer's basic structural validator accepted the result.</p>
+        <p class="compatibility-next"><strong>Before claiming end-to-end provenance:</strong> align the finding fields and fixture packages, then verify citation preservation using the actual cross-repository outputs. This review did not modify the pipeline implementations.</p>
+        <div class="source-links"><a href="https://github.com/siddhant61/content-research-pipeline/blob/4c3faa9160b7e854b06e22405446a167711eaeff/integration_fixtures/jwst/downstream/ResearchBrief.json">Research output ↗</a><a href="https://github.com/siddhant61/media-generation-pipeline/blob/3e66e070ba1f17b5b512814f9b19cff45f2734f1/scene_plan_generator.py">Scene consumer ↗</a><a href="https://github.com/siddhant61/media-generation-pipeline/blob/3e66e070ba1f17b5b512814f9b19cff45f2734f1/research_brief_handoff.py">Handoff loader ↗</a></div>
+      </article>
+        </details>
+        <details>
+          <summary>Reviewed sources and verification scope</summary>
+    <section id="evidence" class="evidence" aria-labelledby="evidence-title">
+      <div class="section-heading">
+        <div><span class="eyebrow">REVIEWED PUBLIC SOURCES</span><h3 id="evidence-title">Sources and review scope</h3></div>
+        <p>These links point to the reviewed commits. Repository homepages above show the latest project state.</p>
+      </div>
+      <div class="evidence-grid">
+        <article><h4>Artifact contracts</h4><p>Shared field definitions, ownership, naming, and compatibility rules.</p><a href="https://github.com/siddhant61/material-ingestion-pipeline/blob/e52cdd4f89dd28ab94e0789044c8895bc22f0782/contracts/schemas.md">Read the shared artifact schemas ↗</a></article>
+        <article><h4>Ingestion limitations</h4><p>Placeholder content, absent embeddings, and partial provenance in the frozen fixtures.</p><a href="https://github.com/siddhant61/material-ingestion-pipeline/blob/e52cdd4f89dd28ab94e0789044c8895bc22f0782/FIXTURES.md">Read the ingestion fixture notes ↗</a></article>
+        <article><h4>Upstream fixture differences</h4><p>Two different graph packages sit at the Ingestion → Research boundary.</p><div class="source-links"><a href="https://github.com/siddhant61/material-ingestion-pipeline/blob/e52cdd4f89dd28ab94e0789044c8895bc22f0782/integration_fixtures/jwst/upstream/KnowledgeGraphPackage.json">Ingestion graph ↗</a><a href="https://github.com/siddhant61/content-research-pipeline/blob/4c3faa9160b7e854b06e22405446a167711eaeff/integration_fixtures/jwst/upstream/KnowledgeGraphPackage.json">Research input graph ↗</a></div></article>
+        <article><h4>Research and Media inputs</h4><p>The Research handoff descriptor and Media's separate bundled brief make their assumptions visible.</p><div class="source-links"><a href="https://github.com/siddhant61/content-research-pipeline/blob/4c3faa9160b7e854b06e22405446a167711eaeff/integration_fixtures/jwst/downstream/handoff_manifest.json">Research handoff descriptor ↗</a><a href="https://github.com/siddhant61/media-generation-pipeline/blob/3e66e070ba1f17b5b512814f9b19cff45f2734f1/demo_data/jwst_star_formation_early_universe_demo/ResearchBrief.json">Media's bundled ResearchBrief ↗</a></div></article>
+      </div>
+      <p class="section-note">The review covered public source files and one focused offline consumer check. Full pipeline suites, live source acquisition, and API-backed rendering were not run.</p>
+    </section>
+        </details>
+      </div>
+    </section>
+  </main>
+  <footer><span>DISPATCH / AI WORKFLOW STACK</span><span>Material → Research → Media</span><a href="#status">Work-in-progress notes</a></footer>
+</body>
+</html>

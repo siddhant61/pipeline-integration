@@ -1,0 +1,55 @@
+name: Deploy pipeline showcase
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'showcase/**'
+      - '.github/workflows/deploy-showcase-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: showcase-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out only the showcase
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout: showcase
+      - name: Stage the explicit public file allowlist
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f showcase/index.html && test ! -L showcase/index.html
+          test -f showcase/style.css && test ! -L showcase/style.css
+          mkdir _site
+          cp showcase/index.html showcase/style.css _site/
+          touch _site/.nojekyll
+          test "$(find _site -type f | wc -l)" -eq 3
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Upload only the staged public files
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the showcase
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
