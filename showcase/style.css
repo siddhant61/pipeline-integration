@@ -164,3 +164,33 @@ summary:focus-visible{outline:3px solid var(--lime);outline-offset:5px}
 
 #evidence .section-heading h3{font-size:24px;line-height:1.2;letter-spacing:-.5px;margin:12px 0 0}
 #evidence .evidence-grid h4{font-size:18px;font-weight:500;line-height:1.3;margin:24px 0 18px}
+
+/* A public-facing story, with technical outputs available on demand. */
+.card p.outcome{min-height:0;border-top:1px solid var(--line);padding-top:18px;margin-top:auto}
+.outcome strong{display:block;color:var(--ink);font-weight:500;margin-bottom:6px}
+.card details.artifact{flex:0;padding-top:14px}
+.artifact summary{cursor:pointer;font-size:12px;color:var(--muted);padding:4px 0}
+.artifact summary:hover{color:var(--lime)}
+.dispatch-band{display:grid;grid-template-columns:minmax(170px,1fr) minmax(0,2fr);gap:48px;border:1px solid var(--line);border-top:3px solid var(--lime);padding:30px;margin-top:20px}
+.dispatch-band h3{font-size:32px;margin:12px 0 18px;letter-spacing:-1px}
+.dispatch-band h4{font-size:22px;font-weight:500;margin:0 0 12px}
+.dispatch-band p{color:var(--muted);font-size:14px;margin-bottom:18px}
+.dispatch-purpose{font-size:10px;letter-spacing:1px;color:var(--lime)}
+.section-note a{text-decoration:underline;text-underline-offset:3px}
+.story-example{grid-column:1/-1;margin:0;border-top:1px solid #9bad91;padding-top:30px}
+.story-example figcaption{max-width:720px;margin-bottom:25px}
+.story-example h3{font-size:28px;letter-spacing:-.5px;margin:12px 0}
+.story-example figcaption p{font-size:13px;color:#475444;margin:0}
+.story-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.story-step{min-width:0;padding:20px;background:#edf2e5;border:1px solid #9bad91}
+.story-art{margin:-20px -20px 20px;background:#d5e0c4;border-bottom:1px solid #9bad91}
+.story-art svg{display:block;width:100%;height:125px;fill:none;stroke:#466137;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.story-step .step{font-size:10px;color:#475444;letter-spacing:1px}
+.story-step h4{font-size:18px;line-height:1.35;font-weight:500;margin:10px 0}
+.story-step p{font-size:13px;color:#475444;margin:0}
+.contribution{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:70px;background:var(--panel)}
+.contribution h2{font-size:clamp(28px,3vw,40px)}
+.contribution p{color:var(--muted);font-size:16px}
+.contribution p.contribution-context{font-size:14px}
+@media(max-width:800px){.dispatch-band,.contribution{grid-template-columns:1fr;gap:26px}.dispatch-band{padding:24px}.story-steps{grid-template-columns:1fr}.story-art svg{height:115px}.story-example{padding-top:25px}.story-step h4{font-size:20px}}
+
